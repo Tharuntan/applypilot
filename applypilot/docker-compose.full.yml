@@ -1,0 +1,55 @@
+# Optional: run the ENTIRE stack (db + backend + frontend) in Docker.
+#   docker compose -f docker-compose.full.yml up --build
+# The default docker-compose.yml runs only PostgreSQL (recommended for local dev).
+
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: applypilot-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: applypilot
+      POSTGRES_USER: applypilot
+      POSTGRES_PASSWORD: applypilot
+    ports:
+      - "5432:5432"
+    volumes:
+      - applypilot_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U applypilot -d applypilot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: applypilot-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/applypilot
+      DB_USERNAME: applypilot
+      DB_PASSWORD: applypilot
+      CORS_ALLOWED_ORIGINS: http://localhost:4200,http://localhost:8081
+      # Set these to enable AI mode:
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_BASE_URL: ${AI_BASE_URL:-https://api.openai.com/v1}
+      AI_MODEL: ${AI_MODEL:-gpt-4o-mini}
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build: ./frontend/applypilot-ui
+    container_name: applypilot-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "8081:80"
+
+volumes:
+  applypilot_pgdata:

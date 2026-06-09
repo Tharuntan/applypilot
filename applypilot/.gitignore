@@ -1,0 +1,32 @@
+# ===== Java / Maven =====
+backend/target/
+*.class
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+.mvn/
+mvnw
+mvnw.cmd
+
+# ===== Node / Angular =====
+frontend/applypilot-ui/node_modules/
+frontend/applypilot-ui/dist/
+frontend/applypilot-ui/.angular/
+npm-debug.log*
+
+# ===== Env / secrets =====
+.env
+*.local.env
+backend/src/main/resources/application-local.yml
+
+# ===== IDE =====
+.idea/
+*.iml
+.vscode/
+.qodo/
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+
+# ===== Logs =====
+*.log

@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: applypilot-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: applypilot
+      POSTGRES_USER: applypilot
+      POSTGRES_PASSWORD: applypilot
+    ports:
+      - "5432:5432"
+    volumes:
+      - applypilot_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U applypilot -d applypilot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  applypilot_pgdata:
