@@ -1,7 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../core/auth.service';
+import { AiService, AiStatus } from '../core/ai.service';
 
 @Component({
   selector: 'app-settings',
@@ -22,13 +23,28 @@ import { AuthService } from '../core/auth.service';
       </div>
 
       <div class="ap-card p-4 mb-4">
-        <h6 class="fw-bold mb-3">AI Mode</h6>
-        <p class="text-secondary mb-2">
-          ApplyPilot works with or without an AI provider. When the backend has an <code>AI_API_KEY</code>
-          configured, analyses and documents are AI-generated. Otherwise a built-in keyword analyzer and
-          templates are used.
-        </p>
-        <p class="text-secondary small mb-0">Configure AI via backend environment variables: <code>AI_API_KEY</code>, <code>AI_BASE_URL</code>, <code>AI_MODEL</code>.</p>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="fw-bold mb-0">AI Mode</h6>
+          @if (ai(); as a) {
+            @if (a.enabled) {
+              <span class="badge text-bg-success"><i class="bi bi-stars me-1"></i>AI ON · {{ a.provider }}</span>
+            } @else {
+              <span class="badge text-bg-secondary"><i class="bi bi-cpu me-1"></i>Keyword mode</span>
+            }
+          }
+        </div>
+        @if (ai()?.enabled) {
+          <p class="text-secondary mb-0">Using <strong>{{ ai()?.provider }}</strong> (model <code>{{ ai()?.model }}</code>) for analyses and documents. ✨</p>
+        } @else {
+          <p class="text-secondary mb-2">
+            Currently using the built-in keyword analyzer + templates. To turn on real AI for free, set these
+            backend environment variables and restart:
+          </p>
+          <pre class="bg-light border rounded p-3 small mb-0">AI_API_KEY=your_groq_key
+AI_BASE_URL=https://api.groq.com/openai/v1
+AI_MODEL=llama-3.3-70b-versatile</pre>
+          <p class="text-secondary small mt-2 mb-0">Get a free key at <a href="https://console.groq.com/keys" target="_blank" rel="noopener">console.groq.com/keys</a>.</p>
+        }
       </div>
 
       <div class="ap-card p-4">
@@ -38,9 +54,16 @@ import { AuthService } from '../core/auth.service';
     </div>
   `,
 })
-export class SettingsComponent {
+export class SettingsComponent implements OnInit {
   readonly auth = inject(AuthService);
   private router = inject(Router);
+  private aiService = inject(AiService);
+
+  ai = signal<AiStatus | null>(null);
+
+  ngOnInit(): void {
+    this.aiService.status().subscribe({ next: (s) => this.ai.set(s), error: () => {} });
+  }
 
   logout(): void {
     this.auth.logout();
