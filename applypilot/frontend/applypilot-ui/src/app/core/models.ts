@@ -30,6 +30,11 @@ export interface ResumeRequest {
   primaryResume?: boolean;
 }
 
+export interface ResumeExtract {
+  title: string;
+  content: string;
+}
+
 export interface JobDescription {
   id: number;
   companyName: string;

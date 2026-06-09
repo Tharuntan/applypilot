@@ -1,10 +1,12 @@
 package com.applypilot.controller;
 
 import com.applypilot.dto.ResumeDtos.*;
+import com.applypilot.service.FileTextExtractor;
 import com.applypilot.service.ResumeService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -13,9 +15,22 @@ import java.util.List;
 public class ResumeController {
 
     private final ResumeService service;
+    private final FileTextExtractor fileTextExtractor;
 
-    public ResumeController(ResumeService service) {
+    public ResumeController(ResumeService service, FileTextExtractor fileTextExtractor) {
         this.service = service;
+        this.fileTextExtractor = fileTextExtractor;
+    }
+
+    /**
+     * Upload a PDF/DOCX/TXT resume; returns the extracted text and a suggested
+     * title so the user can review and edit before saving.
+     */
+    @PostMapping(value = "/extract", consumes = "multipart/form-data")
+    public ResumeExtractResponse extract(@RequestParam("file") MultipartFile file) {
+        String text = fileTextExtractor.extract(file);
+        String title = fileTextExtractor.suggestTitle(file.getOriginalFilename());
+        return new ResumeExtractResponse(title, text);
     }
 
     @GetMapping

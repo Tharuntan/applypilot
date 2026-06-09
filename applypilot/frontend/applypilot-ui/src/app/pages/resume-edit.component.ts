@@ -17,6 +17,23 @@ import { ResumeService } from '../core/resume.service';
         <div class="alert alert-danger">{{ error() }}</div>
       }
 
+      <div class="ap-card p-4 mb-3 border-primary-subtle" style="border-style:dashed;">
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+          <div class="flex-grow-1">
+            <h6 class="fw-bold mb-1"><i class="bi bi-cloud-arrow-up me-1 text-primary"></i>Upload a file instead of pasting</h6>
+            <p class="text-secondary small mb-0">PDF, DOCX, DOC or TXT (max 5 MB). We'll extract the text — you can edit it before saving.</p>
+          </div>
+          <div>
+            <input #fileInput type="file" class="d-none" accept=".pdf,.doc,.docx,.txt,.rtf" (change)="onFile($event)" />
+            <button type="button" class="btn btn-outline-primary" (click)="fileInput.click()" [disabled]="uploading()">
+              @if (uploading()) { <span class="spinner-border spinner-border-sm me-2"></span>Reading… }
+              @else { <i class="bi bi-upload me-1"></i>Choose file }
+            </button>
+          </div>
+        </div>
+        @if (uploadMsg()) { <div class="alert alert-success py-2 mb-0 mt-3">{{ uploadMsg() }}</div> }
+      </div>
+
       <form class="ap-card p-4" [formGroup]="form" (ngSubmit)="submit()">
         <div class="mb-3">
           <label class="form-label">Title</label>
@@ -50,6 +67,8 @@ export class ResumeEditComponent implements OnInit {
 
   id: number | null = null;
   saving = signal(false);
+  uploading = signal(false);
+  uploadMsg = signal<string | null>(null);
   error = signal<string | null>(null);
 
   form = this.fb.nonNullable.group({
@@ -66,6 +85,31 @@ export class ResumeEditComponent implements OnInit {
         this.form.patchValue({ title: r.title, content: r.content, primaryResume: r.primaryResume }),
       );
     }
+  }
+
+  onFile(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    this.uploading.set(true);
+    this.uploadMsg.set(null);
+    this.error.set(null);
+    this.service.extractFromFile(file).subscribe({
+      next: (res) => {
+        this.form.patchValue({
+          content: res.content,
+          title: this.form.controls.title.value?.trim() ? this.form.controls.title.value : res.title,
+        });
+        this.uploadMsg.set(`Imported "${file.name}" — review the text below and save.`);
+        this.uploading.set(false);
+        input.value = '';
+      },
+      error: (err) => {
+        this.error.set(err?.error?.message ?? 'Could not read that file.');
+        this.uploading.set(false);
+        input.value = '';
+      },
+    });
   }
 
   submit(): void {

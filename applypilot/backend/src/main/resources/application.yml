@@ -17,6 +17,10 @@ spring:
         format_sql: false
     open-in-view: false
     show-sql: false
+  servlet:
+    multipart:
+      max-file-size: 6MB
+      max-request-size: 6MB
 
 # ApplyPilot application settings
 applypilot:

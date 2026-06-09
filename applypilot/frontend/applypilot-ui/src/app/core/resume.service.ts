@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { Resume, ResumeRequest } from './models';
+import { Resume, ResumeExtract, ResumeRequest } from './models';
 
 @Injectable({ providedIn: 'root' })
 export class ResumeService {
@@ -12,6 +12,13 @@ export class ResumeService {
 
   list(): Observable<Resume[]> {
     return this.http.get<Resume[]>(this.api);
+  }
+
+  /** Upload a PDF/DOCX/TXT and get back extracted text + a suggested title. */
+  extractFromFile(file: File): Observable<ResumeExtract> {
+    const form = new FormData();
+    form.append('file', file);
+    return this.http.post<ResumeExtract>(`${this.api}/extract`, form);
   }
 
   get(id: number): Observable<Resume> {

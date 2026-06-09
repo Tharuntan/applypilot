@@ -26,4 +26,11 @@ public final class ResumeDtos {
             Instant updatedAt
     ) {
     }
+
+    /** Text extracted from an uploaded PDF/DOCX file, ready to review and save. */
+    public record ResumeExtractResponse(
+            String title,
+            String content
+    ) {
+    }
 }
