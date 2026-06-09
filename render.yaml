@@ -1,0 +1,46 @@
+# Render Blueprint for ApplyPilot backend + PostgreSQL.
+# In Render: New + > Blueprint > connect the Tharuntan/applypilot repo.
+# It creates the database and the backend web service automatically.
+# After the first deploy, set the three "sync: false" vars in the dashboard
+# (DB_URL, CORS_ALLOWED_ORIGINS, AI_API_KEY) — see docs/DEPLOY.md.
+
+databases:
+  - name: applypilot-db
+    databaseName: applypilot
+    user: applypilot
+    plan: free
+
+services:
+  - type: web
+    name: applypilot-backend
+    runtime: docker
+    rootDir: applypilot/backend
+    dockerfilePath: ./Dockerfile
+    plan: starter            # ~$7/mo, always-on (use "free" to test, but it sleeps)
+    healthCheckPath: /actuator/health
+    autoDeploy: true
+    envVars:
+      # Paste the database's "Internal Database URL", rewritten as a JDBC URL:
+      #   jdbc:postgresql://HOST:PORT/applypilot   (see docs/DEPLOY.md)
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        fromDatabase:
+          name: applypilot-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: applypilot-db
+          property: password
+      - key: JWT_SECRET
+        generateValue: true          # Render generates a strong secret for you
+      # Your Netlify site URL, e.g. https://applypilot.netlify.app
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      # Free Groq key from https://console.groq.com/keys (leave blank for fallback)
+      - key: AI_API_KEY
+        sync: false
+      - key: AI_BASE_URL
+        value: https://api.groq.com/openai/v1
+      - key: AI_MODEL
+        value: llama-3.3-70b-versatile

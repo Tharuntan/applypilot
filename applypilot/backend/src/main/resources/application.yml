@@ -1,5 +1,6 @@
 server:
-  port: ${SERVER_PORT:8080}
+  # Cloud hosts (Render/Railway) inject PORT; fall back to SERVER_PORT, then 8080 locally.
+  port: ${PORT:${SERVER_PORT:8080}}
 
 spring:
   application:
@@ -36,6 +37,16 @@ applypilot:
     base-url: ${AI_BASE_URL:https://api.groq.com/openai/v1}
     model: ${AI_MODEL:llama-3.3-70b-versatile}
     timeout-seconds: ${AI_TIMEOUT_SECONDS:60}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
 
 logging:
   level:
