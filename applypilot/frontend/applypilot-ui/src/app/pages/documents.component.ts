@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
+import { downloadTextPdf } from '../core/pdf.util';
 import { DocumentService } from '../core/document.service';
 import { ResumeService } from '../core/resume.service';
 import { JobDescriptionService } from '../core/job-description.service';
@@ -73,8 +74,9 @@ import {
                       <h6 class="fw-bold mb-0">{{ d.title }}</h6>
                     </div>
                     <div class="d-flex gap-1">
-                      <button class="btn btn-sm btn-outline-secondary" (click)="copy(d.content)"><i class="bi bi-clipboard"></i></button>
-                      <button class="btn btn-sm btn-outline-danger" (click)="remove(d)"><i class="bi bi-trash"></i></button>
+                      <button class="btn btn-sm btn-outline-secondary" title="Copy" (click)="copy(d.content)"><i class="bi bi-clipboard"></i></button>
+                      <button class="btn btn-sm btn-outline-primary" title="Download PDF" (click)="downloadPdf(d)"><i class="bi bi-filetype-pdf"></i></button>
+                      <button class="btn btn-sm btn-outline-danger" title="Delete" (click)="remove(d)"><i class="bi bi-trash"></i></button>
                     </div>
                   </div>
                   <p class="ap-doc-content mb-0">{{ d.content }}</p>
@@ -146,6 +148,10 @@ export class DocumentsComponent implements OnInit {
 
   copy(text: string): void {
     navigator.clipboard?.writeText(text);
+  }
+
+  downloadPdf(d: GeneratedDocument): void {
+    downloadTextPdf(d.title, d.content, d.title);
   }
 
   typeLabel(type: DocumentType): string {

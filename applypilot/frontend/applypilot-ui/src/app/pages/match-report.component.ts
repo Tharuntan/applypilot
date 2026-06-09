@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatchService } from '../core/match.service';
 import { ApplicationService } from '../core/application.service';
+import { downloadTextPdf } from '../core/pdf.util';
 import { MatchReport } from '../core/models';
 
 @Component({
@@ -80,7 +81,10 @@ import { MatchReport } from '../core/models';
 
           <div class="col-12">
             <div class="ap-card p-4">
-              <h6 class="fw-bold mb-3">Optimized Bullet Points</h6>
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold mb-0">Optimized Bullet Points</h6>
+                <button class="btn btn-sm btn-outline-primary" (click)="downloadResumePdf(r)"><i class="bi bi-filetype-pdf me-1"></i>Download optimized resume</button>
+              </div>
               <ul class="mb-0 ps-3">@for (b of r.optimizedBullets; track b) { <li class="mb-2">{{ b }}</li> }</ul>
             </div>
           </div>
@@ -90,7 +94,10 @@ import { MatchReport } from '../core/models';
               <div class="ap-card p-4">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                   <h6 class="fw-bold mb-0">{{ doc.title }}</h6>
-                  <button class="btn btn-sm btn-outline-secondary" (click)="copy(doc.content)"><i class="bi bi-clipboard me-1"></i>Copy</button>
+                  <div class="d-flex gap-1">
+                    <button class="btn btn-sm btn-outline-secondary" (click)="copy(doc.content)"><i class="bi bi-clipboard me-1"></i>Copy</button>
+                    <button class="btn btn-sm btn-outline-primary" (click)="downloadPdf(doc.title, doc.content)"><i class="bi bi-filetype-pdf me-1"></i>PDF</button>
+                  </div>
                 </div>
                 <p class="ap-doc-content mb-0">{{ doc.content }}</p>
               </div>
@@ -169,6 +176,21 @@ export class MatchReportComponent implements OnInit {
 
   copy(text: string): void {
     navigator.clipboard?.writeText(text);
+  }
+
+  downloadPdf(title: string, content: string): void {
+    const r = this.report();
+    const suffix = r ? ` - ${r.jobTitle} @ ${r.companyName}` : '';
+    downloadTextPdf(title + suffix, content, title + suffix);
+  }
+
+  downloadResumePdf(r: MatchReport): void {
+    const body =
+      'PROFESSIONAL SUMMARY\n' +
+      (r.suggestedSummary || '') +
+      '\n\nKEY ACHIEVEMENTS\n' +
+      r.optimizedBullets.map((b) => '• ' + b).join('\n');
+    downloadTextPdf(`Optimized Resume - ${r.jobTitle}`, body, `optimized_resume_${r.jobTitle}`);
   }
 
   scoreColor(score: number): string {
