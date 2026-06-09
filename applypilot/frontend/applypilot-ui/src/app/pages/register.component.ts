@@ -10,7 +10,10 @@ import { AuthService } from '../core/auth.service';
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
   template: `
     <div class="container" style="max-width: 440px;">
-      <div class="ap-card p-4 p-md-5 mt-5">
+      <div class="ap-card ap-animate p-4 p-md-5 mt-5">
+        <div class="text-center mb-3">
+          <span class="ap-brand"><i class="bi bi-rocket-takeoff-fill"></i> ApplyPilot</span>
+        </div>
         <h3 class="fw-bold mb-1">Create your account</h3>
         <p class="text-secondary mb-4">Start applying smarter in minutes.</p>
 
