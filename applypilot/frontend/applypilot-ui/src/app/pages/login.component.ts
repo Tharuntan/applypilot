@@ -27,7 +27,10 @@ import { AuthService } from '../core/auth.service';
             <input type="email" class="form-control" formControlName="email" placeholder="you@example.com" />
           </div>
           <div class="mb-3">
-            <label class="form-label">Password</label>
+            <div class="d-flex justify-content-between">
+              <label class="form-label">Password</label>
+              <a class="small" routerLink="/forgot-password">Forgot?</a>
+            </div>
             <input type="password" class="form-control" formControlName="password" placeholder="••••••••" />
           </div>
           <button class="btn btn-primary w-100" type="submit" [disabled]="form.invalid || loading()">

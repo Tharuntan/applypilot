@@ -40,7 +40,28 @@ public final class AuthDtos {
             String fullName,
             String email,
             String role,
+            boolean emailVerified,
             Instant createdAt
     ) {
+    }
+
+    public record ForgotPasswordRequest(
+            @NotBlank @Email String email
+    ) {
+    }
+
+    public record ResetPasswordRequest(
+            @NotBlank String token,
+            @NotBlank @Size(min = 6, max = 100) String password
+    ) {
+    }
+
+    public record TokenRequest(
+            @NotBlank String token
+    ) {
+    }
+
+    /** Generic message response for fire-and-forget actions. */
+    public record MessageResponse(String message) {
     }
 }

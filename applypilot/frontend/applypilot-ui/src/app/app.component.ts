@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from './core/auth.service';
@@ -52,6 +52,21 @@ import { AuthService } from './core/auth.service';
       </div>
     </nav>
 
+    @if (auth.isAuthenticated() && auth.user() && !auth.user()!.emailVerified) {
+      <div class="alert alert-warning border-0 rounded-0 mb-0 py-2">
+        <div class="container d-flex flex-wrap align-items-center justify-content-center gap-2 small">
+          <span><i class="bi bi-envelope-exclamation me-1"></i>Please verify your email.</span>
+          @if (resendState() === 'idle') {
+            <button class="btn btn-sm btn-link p-0 align-baseline" (click)="resend()">Resend verification email</button>
+          } @else if (resendState() === 'sending') {
+            <span class="text-muted">Sending…</span>
+          } @else {
+            <span class="text-success">Sent! Check your inbox.</span>
+          }
+        </div>
+      </div>
+    }
+
     <main>
       <router-outlet />
     </main>
@@ -60,6 +75,16 @@ import { AuthService } from './core/auth.service';
 export class AppComponent {
   readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+
+  resendState = signal<'idle' | 'sending' | 'sent'>('idle');
+
+  resend(): void {
+    this.resendState.set('sending');
+    this.auth.resendVerification().subscribe({
+      next: () => this.resendState.set('sent'),
+      error: () => this.resendState.set('sent'),
+    });
+  }
 
   logout(): void {
     this.auth.logout();

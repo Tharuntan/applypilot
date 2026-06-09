@@ -32,4 +32,28 @@ public class AuthController {
     public UserResponse me() {
         return authService.toUserResponse(currentUser.require());
     }
+
+    @PostMapping("/forgot-password")
+    public MessageResponse forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        authService.requestPasswordReset(request.email());
+        return new MessageResponse("If an account exists for that email, a reset link has been sent.");
+    }
+
+    @PostMapping("/reset-password")
+    public MessageResponse resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request.token(), request.password());
+        return new MessageResponse("Your password has been reset. You can now log in.");
+    }
+
+    @PostMapping("/verify-email")
+    public MessageResponse verifyEmail(@Valid @RequestBody TokenRequest request) {
+        authService.verifyEmail(request.token());
+        return new MessageResponse("Your email has been verified. Thank you!");
+    }
+
+    @PostMapping("/resend-verification")
+    public MessageResponse resendVerification() {
+        authService.resendVerification(currentUser.require());
+        return new MessageResponse("Verification email sent.");
+    }
 }

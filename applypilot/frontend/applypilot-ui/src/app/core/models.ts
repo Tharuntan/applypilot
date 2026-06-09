@@ -5,6 +5,7 @@ export interface UserResponse {
   fullName: string;
   email: string;
   role: string;
+  emailVerified: boolean;
   createdAt: string;
 }
 

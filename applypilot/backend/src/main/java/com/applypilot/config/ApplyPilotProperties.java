@@ -22,6 +22,18 @@ public class ApplyPilotProperties {
     @NestedConfigurationProperty
     private Ai ai = new Ai();
 
+    @NestedConfigurationProperty
+    private App app = new App();
+
+    @Getter
+    @Setter
+    public static class App {
+        /** Public frontend URL, used to build links in emails. */
+        private String frontendUrl = "http://localhost:4200";
+        /** From address for outgoing emails. */
+        private String mailFrom = "no-reply@applypilot.app";
+    }
+
     @Getter
     @Setter
     public static class Security {

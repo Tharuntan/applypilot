@@ -29,4 +29,8 @@ public class User extends BaseAuditEntity {
     @Column(nullable = false)
     @Builder.Default
     private Role role = Role.USER;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean emailVerified = false;
 }
