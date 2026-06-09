@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { DashboardService } from '../core/dashboard.service';
+import { AuthService } from '../core/auth.service';
 import { DashboardSummary } from '../core/models';
 
 @Component({
@@ -19,24 +20,50 @@ import { DashboardSummary } from '../core/models';
       </div>
 
       @if (summary(); as s) {
+        @if (isNewUser(s)) {
+          <div class="ap-card ap-animate p-4 p-md-5 mb-4" style="background:linear-gradient(135deg,#eef2ff,#fff);">
+            <h4 class="fw-bold mb-1">Welcome aboard, {{ firstName() }} 👋</h4>
+            <p class="text-secondary mb-4">Three quick steps and you'll have your first match score:</p>
+            <div class="row g-3">
+              <div class="col-md-4">
+                <a class="ap-card ap-card-interactive d-block p-3 h-100 text-body" routerLink="/resumes/new">
+                  <div class="d-flex align-items-center gap-2 mb-1"><span class="badge text-bg-primary rounded-circle">1</span><span class="fw-semibold">Add your resume</span></div>
+                  <div class="small text-secondary">Upload a PDF or paste the text.</div>
+                </a>
+              </div>
+              <div class="col-md-4">
+                <a class="ap-card ap-card-interactive d-block p-3 h-100 text-body" routerLink="/jobs/new">
+                  <div class="d-flex align-items-center gap-2 mb-1"><span class="badge text-bg-primary rounded-circle">2</span><span class="fw-semibold">Add a job</span></div>
+                  <div class="small text-secondary">Paste a job description you like.</div>
+                </a>
+              </div>
+              <div class="col-md-4">
+                <a class="ap-card ap-card-interactive d-block p-3 h-100 text-body" routerLink="/analyze">
+                  <div class="d-flex align-items-center gap-2 mb-1"><span class="badge text-bg-primary rounded-circle">3</span><span class="fw-semibold">Analyze the match</span></div>
+                  <div class="small text-secondary">Get your score + tailored docs.</div>
+                </a>
+              </div>
+            </div>
+          </div>
+        }
         <div class="row g-3 mb-4">
           <div class="col-6 col-lg-2">
-            <div class="ap-card ap-stat"><div class="ap-stat-value">{{ s.totalApplications }}</div><div class="ap-stat-label">Total Applications</div></div>
+            <div class="ap-card ap-stat ap-animate"><i class="bi bi-send ap-stat-icon text-primary"></i><div class="ap-stat-value">{{ s.totalApplications }}</div><div class="ap-stat-label">Total Applications</div></div>
           </div>
           <div class="col-6 col-lg-2">
-            <div class="ap-card ap-stat"><div class="ap-stat-value text-primary">{{ s.averageMatchScore }}</div><div class="ap-stat-label">Avg Match Score</div></div>
+            <div class="ap-card ap-stat ap-animate"><i class="bi bi-bullseye ap-stat-icon text-primary"></i><div class="ap-stat-value text-primary">{{ s.averageMatchScore }}</div><div class="ap-stat-label">Avg Match Score</div></div>
           </div>
           <div class="col-6 col-lg-2">
-            <div class="ap-card ap-stat"><div class="ap-stat-value">{{ s.followUpsDue }}</div><div class="ap-stat-label">Follow-ups Due</div></div>
+            <div class="ap-card ap-stat ap-animate"><i class="bi bi-alarm ap-stat-icon text-warning"></i><div class="ap-stat-value">{{ s.followUpsDue }}</div><div class="ap-stat-label">Follow-ups Due</div></div>
           </div>
           <div class="col-6 col-lg-2">
-            <div class="ap-card ap-stat"><div class="ap-stat-value">{{ s.interviews }}</div><div class="ap-stat-label">Interviews</div></div>
+            <div class="ap-card ap-stat ap-animate"><i class="bi bi-chat-dots ap-stat-icon text-info"></i><div class="ap-stat-value">{{ s.interviews }}</div><div class="ap-stat-label">Interviews</div></div>
           </div>
           <div class="col-6 col-lg-2">
-            <div class="ap-card ap-stat"><div class="ap-stat-value text-success">{{ s.offers }}</div><div class="ap-stat-label">Offers</div></div>
+            <div class="ap-card ap-stat ap-animate"><i class="bi bi-trophy ap-stat-icon text-success"></i><div class="ap-stat-value text-success">{{ s.offers }}</div><div class="ap-stat-label">Offers</div></div>
           </div>
           <div class="col-6 col-lg-2">
-            <div class="ap-card ap-stat"><div class="ap-stat-value text-danger">{{ s.rejections }}</div><div class="ap-stat-label">Rejections</div></div>
+            <div class="ap-card ap-stat ap-animate"><i class="bi bi-x-circle ap-stat-icon text-danger"></i><div class="ap-stat-value text-danger">{{ s.rejections }}</div><div class="ap-stat-label">Rejections</div></div>
           </div>
         </div>
 
@@ -103,10 +130,19 @@ import { DashboardSummary } from '../core/models';
 })
 export class DashboardComponent implements OnInit {
   private dashboard = inject(DashboardService);
+  private auth = inject(AuthService);
 
   loading = signal(true);
   error = signal<string | null>(null);
   summary = signal<DashboardSummary | null>(null);
+
+  firstName(): string {
+    return this.auth.user()?.fullName?.split(' ')[0] ?? 'there';
+  }
+
+  isNewUser(s: DashboardSummary): boolean {
+    return s.totalApplications === 0 && s.recentMatchReports.length === 0;
+  }
 
   ngOnInit(): void {
     this.dashboard.summary().subscribe({
